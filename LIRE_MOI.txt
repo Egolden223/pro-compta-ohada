@@ -1,18 +1,14 @@
-CORRECTION BUILD — export manquant buildPayrollDeclaration
-===========================================================
+URGENT — restaurer store.ts
+============================
+Le fichier src/lib/store.ts sur GitHub a été tronqué par erreur.
 
-Erreur Vercel :
-  [MISSING_EXPORT] "buildPayrollDeclaration" is not exported by "src/lib/engine.ts"
-  dans src/pages/paie-immo.tsx
+1. Ouvrir https://github.com/Egolden223/pro-compta-ohada/blob/main/src/lib/store.ts
+2. Edit → tout sélectionner → coller le contenu de src/lib/store.ts de cette archive
+3. Vérifier que workspace-helpers.ts existe aussi (sinon coller celui de l'archive)
+4. Commit : fix: restore full store.ts
+5. Attendre Vercel READY
 
-store.ts est maintenant CORRECT (plus d'erreur de syntaxe).
-
-ACTION (2 min)
---------------
-1. Ouvrir https://github.com/Egolden223/pro-compta-ohada/blob/main/src/lib/engine.ts
-2. Edit → aller tout en BAS du fichier
-3. Coller le contenu du fichier buildPayrollDeclaration.ts (après la dernière ligne)
-4. Commit : fix: export buildPayrollDeclaration
-5. Vercel redéploie
-
-OU remplacer entièrement engine.ts par src/lib/engine.ts de cette archive.
+Le store de cette archive contient déjà :
+- import workspace-helpers
+- loadWorkspaceIndex / saveWorkspaceIndex / WORKSPACE_PREFIX
+- toutes les méthodes (postPayroll, can, deleteWorkspace, etc.)
