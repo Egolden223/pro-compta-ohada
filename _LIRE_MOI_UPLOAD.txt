@@ -1,6 +1,6 @@
-PRO COMPTA OHADA — PARTIE 1/2 — config, public, scripts
+PRO COMPTA OHADA — PARTIE 2/2 — code source src/
 ================================
-Fichiers dans cette archive : 90
+Fichiers dans cette archive : 91
 
 INSTRUCTIONS UPLOAD GITHUB
 1. Ouvrir https://github.com/Egolden223/pro-compta-ohada
