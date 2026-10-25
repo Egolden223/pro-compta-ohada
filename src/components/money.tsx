@@ -14,7 +14,13 @@ export function Money({
 }) {
   const neg = value < 0;
   return (
-    <span className={cn("font-mono tabular-nums tracking-tight", neg && "text-danger", className)}>
+    <span
+      className={cn(
+        "font-mono tabular-nums tracking-tight",
+        neg && "text-danger",
+        className,
+      )}
+    >
       {signed && value > 0 ? "+" : ""}
       {formatMoney(value, currency)}
     </span>

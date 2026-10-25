@@ -31,7 +31,7 @@ URL : `https://pro-compta-ohada.vercel.app` (ou similaire)
 ### 3. Installer l'app
 
 - Android : Chrome → Installer
-- iPhone : Safari → Partager → Sur l'écran d'accueil
+- iPhone : Safari → Partager → Sur l'écran d'accueil  
 - PC : Chrome → Installer
 
 Config déjà en place : `vercel.json`, `package.json` (`build:vercel`), PWA (`manifest` + `sw.js`).

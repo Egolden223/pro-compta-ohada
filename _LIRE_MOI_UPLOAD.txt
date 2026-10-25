@@ -1,0 +1,12 @@
+PRO COMPTA OHADA — PARTIE 1/2 — config, public, scripts
+================================
+Fichiers dans cette archive : 90
+
+INSTRUCTIONS UPLOAD GITHUB
+1. Ouvrir https://github.com/Egolden223/pro-compta-ohada
+2. Add file → Upload files
+3. Glisser TOUT le contenu de CETTE archive (pas le .zip)
+4. Commit changes
+5. Répéter avec l'autre archive UPLOAD_1 ou UPLOAD_2
+
+Ordre conseillé : d'abord UPLOAD_1, puis UPLOAD_2.
