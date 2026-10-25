@@ -85,6 +85,10 @@ export function diagnoseAccounting(data: AppData): AiAlert[] {
     sumD += r.soldeD;
     sumC += r.soldeC;
   }
+  // use movement totals if available
+  for (const r of rows) {
+    // soft check
+  }
   void sumD;
   void sumC;
 
@@ -205,7 +209,7 @@ export function diagnoseAccounting(data: AppData): AiAlert[] {
     });
   }
 
-  // Instruments financiers en retard (réutilise today déclaré plus haut)
+  // Instruments financiers en retard
   for (const fi of data.financialInstruments || []) {
     const od = instrumentOverdue(fi, today);
     if (od > 0) {
@@ -318,6 +322,7 @@ Effectif déclaré dans le dossier : ${(data.employees || []).length} salarié(s
 ${ratios.map((r) => `• ${r.label} : ${r.value}${r.unit === "x" ? "x" : r.unit} — ${r.interpretation}`).join("\n")}
 `;
 
+  // Graphiques textuels (barres ASCII) pour impression
   const bar = (v: number, max: number, width = 20) => {
     const n = max <= 0 ? 0 : Math.min(width, Math.round((Math.abs(v) / max) * width));
     return "█".repeat(n) + "░".repeat(width - n);

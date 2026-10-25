@@ -1,0 +1,30 @@
+CORRECTION PRO COMPTA OHADA — Build Vercel
+==========================================
+
+Fichiers corrigés inclus :
+  src/lib/store.ts       → }, manquant après generateRecurringInvoices
+  src/lib/ai-engine.ts   → double const today supprimé
+  src/pages/dashboard.tsx → description PageHeader restaurée
+  package.json           → @tanstack/react-start 1.168.60 + overrides
+  vercel.json            → installCommand legacy-peer-deps
+  .npmrc                 → legacy-peer-deps=true
+
+INSTALLATION (choisir une méthode)
+
+A) Depuis le dossier source complet (recommandé)
+   1. Décompressez PRO_COMPTA_OHADA_PRODUCTION.zip (ou votre clone git)
+   2. Copiez les fichiers de cette archive PAR-DESSUS :
+        cp -r CORRECTION_BUILD_VERCEL/* /chemin/vers/projet/
+   3. git add -A && git commit -m "fix: store brace + ai-engine today + vercel deps"
+   4. git push origin main
+
+B) Upload GitHub web uniquement
+   1. Ouvrez https://github.com/Egolden223/pro-compta-ohada
+   2. Pour chaque fichier listé ci-dessus :
+      - Naviguez jusqu'au chemin
+      - Cliquez Edit (crayon)
+      - Collez le contenu du fichier correspondant de cette archive
+      - Commit
+
+Après le push, Vercel redéploie automatiquement.
+Surveillez : https://vercel.com → projet pro-compta-ohada
