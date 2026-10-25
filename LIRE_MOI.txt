@@ -1,4 +1,32 @@
-CORRECTION store.ts (postAmortizations + postPayroll closings)
-==============================================================
-Remplace ENTIEREMENT src/lib/store.ts sur GitHub par ce fichier.
-Commit message: fix: close postAmortizations and postPayroll methods
+CORRECTION DÉFINITIVE PRO COMPTA OHADA — store.ts
+==================================================
+Date: 2026-10-25
+
+Corrections appliquées (audit complet) :
+✓ generateRecurringInvoices fermé
+✓ stockOutFromInvoice fermé
+✓ postAmortizations fermé
+✓ postPayroll fermé
+✓ can() fermé
+✓ deleteWorkspace fermé  ← dernière erreur build Vercel
+✓ Pas de fermeture prématurée
+✓ Balance des accolades = 0
+✓ ai-engine : une seule const today
+✓ package.json : TanStack 1.168.60 + overrides
+✓ vercel.json : install --legacy-peer-deps
+
+INSTALLATION
+------------
+1. Ouvrir https://github.com/Egolden223/pro-compta-ohada/blob/main/src/lib/store.ts
+2. Edit → remplacer TOUT le contenu par src/lib/store.ts de cette archive
+3. Commit : fix: definitive store.ts syntax (deleteWorkspace)
+4. Vercel redéploie automatiquement
+
+OU correction minimale manuelle (1 ligne) :
+Chercher deleteWorkspace et ajouter }, avant addAnalyticAxis :
+
+      deleteWorkspace: (id) => {
+        localStorage.removeItem(WORKSPACE_PREFIX + id);
+        saveWorkspaceIndex(loadWorkspaceIndex().filter((w) => w.id !== id));
+      },   // ← cette ligne
+      addAnalyticAxis: (a) => {

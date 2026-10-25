@@ -835,7 +835,7 @@ export const useAppStore = create<Store>()(
       deleteWorkspace: (id) => {
         localStorage.removeItem(WORKSPACE_PREFIX + id);
         saveWorkspaceIndex(loadWorkspaceIndex().filter((w) => w.id !== id));
-      
+      },
       addAnalyticAxis: (a) => {
         const id = uid("ax");
         set((s) => ({
