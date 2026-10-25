@@ -769,7 +769,7 @@ export const useAppStore = create<Store>()(
           assets: updated,
         });
         return lines.length;
-      
+      },
       listWorkspaces: () => loadWorkspaceIndex(),
       saveAsWorkspace: (name) => {
         const s = get();
@@ -994,7 +994,7 @@ export const useAppStore = create<Store>()(
         }
         set({ counters, journal: [...s.journal, ...lines] });
         return emps.length;
-      
+      },
       updateEmployee: (id, patch) =>
         set((s) => ({
           employees: s.employees.map((e) => (e.id === id ? { ...e, ...patch } : e)),
@@ -1008,7 +1008,7 @@ export const useAppStore = create<Store>()(
         if (action === "post") return role === "admin" || role === "comptable";
         if (action === "write") return role !== "lecture";
         return true;
-      
+      },
       markDeclarationDone: (obligationId, periodKey) =>
         set((s) => ({
           declarationsDone: [

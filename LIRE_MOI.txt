@@ -1,4 +1,4 @@
-CORRECTION store.ts — braces Zustand (bloqueur Vercel)
-======================================================
-Remplace src/lib/store.ts sur GitHub par celui de cette archive.
-Puis Vercel redéploie (commit sur main).
+CORRECTION store.ts (postAmortizations + postPayroll closings)
+==============================================================
+Remplace ENTIEREMENT src/lib/store.ts sur GitHub par ce fichier.
+Commit message: fix: close postAmortizations and postPayroll methods
