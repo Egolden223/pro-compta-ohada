@@ -1,32 +1,18 @@
-CORRECTION DÉFINITIVE PRO COMPTA OHADA — store.ts
-==================================================
-Date: 2026-10-25
+CORRECTION BUILD — export manquant buildPayrollDeclaration
+===========================================================
 
-Corrections appliquées (audit complet) :
-✓ generateRecurringInvoices fermé
-✓ stockOutFromInvoice fermé
-✓ postAmortizations fermé
-✓ postPayroll fermé
-✓ can() fermé
-✓ deleteWorkspace fermé  ← dernière erreur build Vercel
-✓ Pas de fermeture prématurée
-✓ Balance des accolades = 0
-✓ ai-engine : une seule const today
-✓ package.json : TanStack 1.168.60 + overrides
-✓ vercel.json : install --legacy-peer-deps
+Erreur Vercel :
+  [MISSING_EXPORT] "buildPayrollDeclaration" is not exported by "src/lib/engine.ts"
+  dans src/pages/paie-immo.tsx
 
-INSTALLATION
-------------
-1. Ouvrir https://github.com/Egolden223/pro-compta-ohada/blob/main/src/lib/store.ts
-2. Edit → remplacer TOUT le contenu par src/lib/store.ts de cette archive
-3. Commit : fix: definitive store.ts syntax (deleteWorkspace)
-4. Vercel redéploie automatiquement
+store.ts est maintenant CORRECT (plus d'erreur de syntaxe).
 
-OU correction minimale manuelle (1 ligne) :
-Chercher deleteWorkspace et ajouter }, avant addAnalyticAxis :
+ACTION (2 min)
+--------------
+1. Ouvrir https://github.com/Egolden223/pro-compta-ohada/blob/main/src/lib/engine.ts
+2. Edit → aller tout en BAS du fichier
+3. Coller le contenu du fichier buildPayrollDeclaration.ts (après la dernière ligne)
+4. Commit : fix: export buildPayrollDeclaration
+5. Vercel redéploie
 
-      deleteWorkspace: (id) => {
-        localStorage.removeItem(WORKSPACE_PREFIX + id);
-        saveWorkspaceIndex(loadWorkspaceIndex().filter((w) => w.id !== id));
-      },   // ← cette ligne
-      addAnalyticAxis: (a) => {
+OU remplacer entièrement engine.ts par src/lib/engine.ts de cette archive.
