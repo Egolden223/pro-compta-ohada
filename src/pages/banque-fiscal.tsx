@@ -43,8 +43,10 @@ export function BanquePage() {
           matched: false,
         });
       }
-      data.importBankCsv(parsed);
-      toast.success(`${parsed.length} lignes importées.`);
+      if (parsed.length) {
+        data.importBankCsv(parsed as any);
+        toast.success(`${parsed.length} lignes importées`);
+      }
     };
     reader.readAsText(file);
   }
@@ -53,94 +55,96 @@ export function BanquePage() {
     <div>
       <PageHeader
         eyebrow="Trésorerie"
-        title="Rapprochement bancaire"
-        description="Comparez le solde du compte 521 avec votre relevé. Importez un CSV (Date;Libellé;Débit;Crédit)."
+        title="Banque"
+        description="Rapprochement bancaire, import CSV et solde théorique."
       />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <h2 className="font-display text-lg">Compte 521 — Banques locales</h2>
-          <dl className="mt-4 space-y-2 text-sm">
-            <Row k="(A) Solde comptable" v={<Money value={soldeCompta} currency={currency} />} />
-            <Row
-              k="(B) Chèques émis non débités"
-              v={
-                <Input
-                  inputMode="decimal"
-                  value={data.bankOutstandingChecks || ""}
-                  onChange={(e) => data.setBank({ bankOutstandingChecks: Number(e.target.value) || 0 })}
-                />
-              }
-            />
-            <Row
-              k="(C) Remises non créditées"
-              v={
-                <Input
-                  inputMode="decimal"
-                  value={data.bankOutstandingDeposits || ""}
-                  onChange={(e) => data.setBank({ bankOutstandingDeposits: Number(e.target.value) || 0 })}
-                />
-              }
-            />
-            <Row
-              k="(D) Régularisations"
-              v={
-                <Input
-                  inputMode="decimal"
-                  value={data.bankAdjustments || ""}
-                  onChange={(e) => data.setBank({ bankAdjustments: Number(e.target.value) || 0 })}
-                />
-              }
-            />
-            <Row k="Solde banque théorique A+B−C+D" v={<Money value={theorique} currency={currency} />} />
-            <Row
-              k="Solde relevé bancaire"
-              v={
-                <Input
-                  inputMode="decimal"
-                  value={data.bankStatementBalance || ""}
-                  onChange={(e) => data.setBank({ bankStatementBalance: Number(e.target.value) || 0 })}
-                />
-              }
-            />
-            <Row
-              k="Écart (doit être 0)"
-              v={<Money value={ecart} currency={currency} />}
-            />
-          </dl>
-          {ecart === 0 ? (
-            <p className="mt-3 text-sm text-accent">Rapprochement équilibré.</p>
-          ) : (
-            <p className="mt-3 text-sm text-warn">Écart à justifier (frais, dates de valeur, erreurs).</p>
-          )}
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4">
+          <p className="text-xs text-muted">Solde comptable (521)</p>
+          <p className="mt-1 font-display text-xl">
+            <Money value={soldeCompta} currency={currency} />
+          </p>
         </Card>
-        <Card>
-          <h2 className="font-display text-lg">Import CSV</h2>
-          <p className="mt-1 text-sm text-muted">Colonnes : Date, Libellé, Débit, Crédit. Séparateur ; ou ,</p>
-          <input
+        <Card className="p-4">
+          <p className="text-xs text-muted">Solde relevé</p>
+          <p className="mt-1 font-display text-xl">
+            <Money value={data.bankStatementBalance} currency={currency} />
+          </p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-muted">Théorique</p>
+          <p className="mt-1 font-display text-xl">
+            <Money value={theorique} currency={currency} />
+          </p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs text-muted">Écart</p>
+          <p className={cn("mt-1 font-display text-xl", Math.abs(ecart) > 1 ? "text-danger" : "")}>
+            <Money value={ecart} currency={currency} />
+          </p>
+        </Card>
+      </div>
+
+      <Card className="mb-4 space-y-3 p-4">
+        <h2 className="font-display text-lg">Paramètres de rapprochement</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Solde relevé bancaire">
+            <Input
+              inputMode="decimal"
+              value={data.bankStatementBalance || ""}
+              onChange={(e) => data.setBank({ bankStatementBalance: Number(e.target.value) || 0 })}
+            />
+          </Field>
+          <Field label="Chèques non débités">
+            <Input
+              inputMode="decimal"
+              value={data.bankOutstandingChecks || ""}
+              onChange={(e) => data.setBank({ bankOutstandingChecks: Number(e.target.value) || 0 })}
+            />
+          </Field>
+          <Field label="Remises non créditées">
+            <Input
+              inputMode="decimal"
+              value={data.bankOutstandingDeposits || ""}
+              onChange={(e) => data.setBank({ bankOutstandingDeposits: Number(e.target.value) || 0 })}
+            />
+          </Field>
+          <Field label="Ajustements">
+            <Input
+              inputMode="decimal"
+              value={data.bankAdjustments || ""}
+              onChange={(e) => data.setBank({ bankAdjustments: Number(e.target.value) || 0 })}
+            />
+          </Field>
+        </div>
+        <div>
+          <label className="text-sm text-muted">Import CSV (date;libellé;débit;crédit)</label>
+          <Input
             type="file"
             accept=".csv,text/csv"
-            className="mt-4 block text-sm"
+            className="mt-1"
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) onFile(f);
             }}
           />
-        </Card>
-      </div>
-      {data.bankImport.length ? (
-        <div className="mt-6 overflow-x-auto rounded-[16px] border border-border">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead className="bg-elevated text-xs uppercase tracking-wide text-muted">
+        </div>
+      </Card>
+
+      {(data.bankImport || []).length > 0 ? (
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted/40 text-xs uppercase text-muted">
               <tr>
-                <th className="px-3 py-2 text-left font-medium">Date</th>
-                <th className="px-3 py-2 text-left font-medium">Libellé</th>
-                <th className="px-3 py-2 text-right font-medium">Débit</th>
-                <th className="px-3 py-2 text-right font-medium">Crédit</th>
-                <th className="px-3 py-2 text-left font-medium">Pointé</th>
+                <th className="px-3 py-2">Date</th>
+                <th className="px-3 py-2">Libellé</th>
+                <th className="px-3 py-2 text-right">Débit</th>
+                <th className="px-3 py-2 text-right">Crédit</th>
+                <th className="px-3 py-2">Rapproché</th>
               </tr>
             </thead>
             <tbody>
-              {data.bankImport.map((l) => (
+              {(data.bankImport || []).map((l) => (
                 <tr key={l.id} className="border-t border-border">
                   <td className="px-3 py-2">{l.date}</td>
                   <td className="px-3 py-2">{l.libelle}</td>
@@ -160,6 +164,31 @@ export function BanquePage() {
             </tbody>
           </table>
         </div>
+      ) : null}
+
+      {matches.length > 0 ? (
+        <Card className="mt-4 p-4">
+          <h2 className="mb-2 font-display text-lg">Rapprochements suggérés</h2>
+          <ul className="space-y-2 text-sm">
+            {matches.slice(0, 15).map((m) => (
+              <li key={m.bankId + m.journalId} className="flex flex-wrap items-center justify-between gap-2">
+                <span>
+                  Score {m.score} — banque {m.bankId.slice(0, 6)} ↔ écriture {m.journalId.slice(0, 6)}
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    data.applyBankMatch(m.bankId, m.journalId);
+                    toast.success("Rapprochement appliqué");
+                  }}
+                >
+                  Rapprocher
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
       ) : null}
     </div>
   );
@@ -183,49 +212,49 @@ export function FiscalitePage() {
       <PageHeader
         eyebrow="OHADA"
         title="Fiscalité des 17 États"
-        description="Les taux de TVA, d’IS et les délais de déclaration suivent le pays choisi dans Paramètres. Données de référence 2026 — à confirmer auprès de l’administration locale."
+        description="Taux TVA, IS, cotisations sociales et échéances par pays."
       />
-      <div className="overflow-x-auto rounded-[16px] border border-border">
-        <table className="w-full min-w-[960px] text-sm">
-          <thead className="bg-elevated text-xs uppercase tracking-wide text-muted">
+      <Card className="mb-4 p-4">
+        <Field label="Pays de l'entreprise">
+          <select
+            className="w-full rounded-lg border border-border bg-background px-3 py-2"
+            value={settings.country}
+            onChange={(e) => update({ country: e.target.value })}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.country} value={c.country}>
+                {c.country}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <p className="mt-3 text-sm text-muted">{current.notes}</p>
+        <p className="mt-1 text-xs text-muted">Fiabilité : {current.reliability}</p>
+      </Card>
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-muted/40 text-xs uppercase text-muted">
             <tr>
-              <th className="px-3 py-2 text-left font-medium">Pays</th>
-              <th className="px-3 py-2 text-left font-medium">Zone</th>
-              <th className="px-3 py-2 text-left font-medium">Devise</th>
-              <th className="px-3 py-2 text-right font-medium">TVA</th>
-              <th className="px-3 py-2 text-right font-medium">IS</th>
-              <th className="px-3 py-2 text-right font-medium">IS min.</th>
-              <th className="px-3 py-2 text-right font-medium">TVA j.</th>
-              <th className="px-3 py-2 text-right font-medium">CNSS j.</th>
+              <th className="px-3 py-2">Pays</th>
+              <th className="px-3 py-2">TVA</th>
+              <th className="px-3 py-2">IS</th>
+              <th className="px-3 py-2">Min.</th>
+              <th className="px-3 py-2">CNSS j+</th>
             </tr>
           </thead>
           <tbody>
             {COUNTRIES.map((c) => (
-              <tr
-                key={c.country}
-                className={cn(
-                  "border-t border-border cursor-pointer hover:bg-elevated/40",
-                  c.country === settings.country && "bg-accent/10",
-                )}
-                onClick={() => {
-                  update({ country: c.country });
-                  toast.success(`Pays : ${c.country}`);
-                }}
-              >
-                <td className="px-3 py-2 font-medium">{c.country}</td>
-                <td className="px-3 py-2">{c.zone}</td>
-                <td className="px-3 py-2">{c.currency}</td>
-                <td className="px-3 py-2 text-right">{formatPct(c.vat)}</td>
-                <td className="px-3 py-2 text-right">{formatPct(c.isRate)}</td>
-                <td className="px-3 py-2 text-right">{formatPct(c.isMin)}</td>
-                <td className="px-3 py-2 text-right">{c.vatDay}</td>
-                <td className="px-3 py-2 text-right">{c.cnssDay}</td>
+              <tr key={c.country} className="border-t border-border">
+                <td className="px-3 py-2">{c.country}</td>
+                <td className="px-3 py-2">{formatPct(c.vat)}</td>
+                <td className="px-3 py-2">{formatPct(c.isRate)}</td>
+                <td className="px-3 py-2">{formatPct(c.isMin)}</td>
+                <td className="px-3 py-2">{c.cnssDay}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="mt-4 max-w-3xl text-sm text-muted">{current.notes} · {current.reliability}</p>
     </div>
   );
 }
@@ -233,51 +262,38 @@ export function FiscalitePage() {
 export function TvaPage() {
   const data = useAppStore();
   const tax = countryByName(data.settings.country);
-  const collected = data.journal.filter((l) => l.credit === "4431").reduce((s, l) => s + l.amount, 0);
-  const deduct = data.journal.filter((l) => l.debit.startsWith("445")).reduce((s, l) => s + l.amount, 0);
-  const credit = data.vatCreditBroughtForward || 0;
-  const due = collected - deduct - credit;
-  const deadlines = fiscalDeadlines(data);
-  const setVatCredit = useAppStore((s) => s.setVatCredit);
+  const k = kpis(data);
   return (
     <div>
       <PageHeader
         eyebrow="Déclarations"
         title="TVA"
-        description={`Taux ${formatPct(tax.vat)} · déclaration le ${tax.vatDay} de chaque mois (${data.settings.country}).`}
+        description={`Taux ${formatPct(tax.vat)} · déclaration typique le ${tax.vatDay} du mois suivant.`}
       />
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card>
-          <p className="text-xs text-muted">TVA collectée (4431)</p>
-          <p className="mt-2 font-display text-2xl">
-            <Money value={collected} currency={tax.currency} />
+        <Card className="p-4">
+          <p className="text-xs text-muted">TVA collectée</p>
+          <p className="mt-1 font-display text-xl">
+            <Money value={k.tvaCollected || 0} currency={tax.currency} />
           </p>
         </Card>
-        <Card>
-          <p className="text-xs text-muted">TVA déductible (445x)</p>
-          <p className="mt-2 font-display text-2xl">
-            <Money value={deduct} currency={tax.currency} />
+        <Card className="p-4">
+          <p className="text-xs text-muted">TVA déductible</p>
+          <p className="mt-1 font-display text-xl">
+            <Money value={k.tvaDeductible || 0} currency={tax.currency} />
           </p>
         </Card>
-        <Card>
-          <p className="text-xs text-muted">{due >= 0 ? "TVA à décaisser" : "Crédit de TVA"}</p>
-          <p className="mt-2 font-display text-2xl">
-            <Money value={due} currency={tax.currency} />
+        <Card className="p-4">
+          <p className="text-xs text-muted">Net à payer / crédit</p>
+          <p className="mt-1 font-display text-xl">
+            <Money value={(k.tvaCollected || 0) - (k.tvaDeductible || 0)} currency={tax.currency} />
           </p>
         </Card>
       </div>
-            <Card className="mt-4 p-4">
-        <Field label="Crédit de TVA reporté (période précédente)">
-          <Input
-            type="number"
-            value={credit}
-            onChange={(e) => setVatCredit(Number(e.target.value) || 0)}
-          />
-        </Field>
+      <Card className="mt-4 p-4 text-sm text-muted">
+        Crédit de TVA reporté : {(data.vatCreditBroughtForward || 0).toLocaleString("fr-FR")} {tax.currency}.
+        Ajustez dans Paramètres / import si besoin.
       </Card>
-<p className="mt-4 text-sm text-muted">
-        Prochaine échéance : {formatDate(deadlines[0]!.date)} ({deadlines[0]!.days} jours).
-      </p>
     </div>
   );
 }
@@ -363,31 +379,6 @@ export function ImpotPage() {
           Comptabiliser l&apos;IS dans le brouillard
         </Button>
       </Card>
-    
-      {matches.length > 0 ? (
-        <Card className="mt-4 p-4">
-          <h2 className="mb-2 font-display text-lg">Rapprochements suggérés</h2>
-          <ul className="space-y-2 text-sm">
-            {matches.slice(0, 15).map((m) => (
-              <li key={m.bankId + m.journalId} className="flex flex-wrap items-center justify-between gap-2">
-                <span>
-                  Score {m.score} — banque {m.bankId.slice(0, 6)} ↔ écriture {m.journalId.slice(0, 6)}
-                </span>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    data.applyBankMatch(m.bankId, m.journalId);
-                    toast.success("Rapprochement appliqué");
-                  }}
-                >
-                  Rapprocher
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
-</div>
+    </div>
   );
 }
