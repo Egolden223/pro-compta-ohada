@@ -274,25 +274,28 @@ export function TvaPage() {
         <Card className="p-4">
           <p className="text-xs text-muted">TVA collectée</p>
           <p className="mt-1 font-display text-xl">
-            <Money value={k.tvaCollected || 0} currency={tax.currency} />
+            <Money value={(k as any).tvaCollected || 0} currency={tax.currency} />
           </p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted">TVA déductible</p>
           <p className="mt-1 font-display text-xl">
-            <Money value={k.tvaDeductible || 0} currency={tax.currency} />
+            <Money value={(k as any).tvaDeductible || 0} currency={tax.currency} />
           </p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted">Net à payer / crédit</p>
           <p className="mt-1 font-display text-xl">
-            <Money value={(k.tvaCollected || 0) - (k.tvaDeductible || 0)} currency={tax.currency} />
+            <Money
+              value={((k as any).tvaCollected || 0) - ((k as any).tvaDeductible || 0)}
+              currency={tax.currency}
+            />
           </p>
         </Card>
       </div>
       <Card className="mt-4 p-4 text-sm text-muted">
-        Crédit de TVA reporté : {(data.vatCreditBroughtForward || 0).toLocaleString("fr-FR")} {tax.currency}.
-        Ajustez dans Paramètres / import si besoin.
+        Crédit de TVA reporté : {(data.vatCreditBroughtForward || 0).toLocaleString("fr-FR")}{" "}
+        {tax.currency}. Ajustez dans Paramètres / import si besoin.
       </Card>
     </div>
   );
@@ -376,7 +379,7 @@ export function ImpotPage() {
             else toast.success("IS comptabilisé (891 / 441).");
           }}
         >
-          Comptabiliser l&apos;IS dans le brouillard
+          Comptabiliser l'IS dans le brouillard
         </Button>
       </Card>
     </div>
