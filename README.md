@@ -1,36 +1,42 @@
-# CORRECTION — Apprentissage + sous-comptes + brouillard
-
-Fichiers à placer **par-dessus** le dépôt `pro-compta-ohada` (même arborescence `src/...`).
+# Modèles d'écriture SYSCOHADA enrichis (TVA + RAS)
 
 ## Contenu
 
 | Fichier | Rôle |
 |---------|------|
-| `src/lib/types.ts` | `CustomAccount`, `JournalTemplate`, champs `customAccounts` / `journalTemplates` |
-| `src/lib/seed.ts` | Initialisation `customAccounts: []`, `journalTemplates: []` |
-| `src/lib/store.ts` | Actions `addCustomAccount`, `removeCustomAccount`, `addJournalTemplate`, etc. |
-| `src/lib/account-utils.ts` | `allAccounts(custom)` plan + sous-comptes |
-| `src/components/account-picker.tsx` | Saisie n° de compte ou libellé + liste filtrée |
-| `src/pages/saisie.tsx` | Modèles / récurrents → préremplir, sauver modèle, PJ à l'enregistrement |
-| `src/pages/misc.tsx` | Plan comptable : création de sous-comptes |
-| `src/pages/assistant.tsx` | Espace d'apprentissage (exemples + question IA, **sans** écriture au journal) |
+| `src/lib/engine.ts` | 67 modèles dont **factures HT+TVA** et **prestations + RAS** |
+| `src/pages/assistant.tsx` | Exemples multi-lignes chiffrés (montant = HT) |
+
+## Nouveaux schémas pédagogiques
+
+Quand l'utilisateur saisit un **montant HT** :
+
+| Modèle | Écriture générée |
+|--------|------------------|
+| **Facture achat HT+TVA** | D 601 HT · D 4452 TVA · C 401 TTC |
+| **Facture vente HT+TVA** | D 411 TTC · C 701 HT · C 4431 TVA |
+| **Prestation vendue HT+TVA** | D 411 TTC · C **706** HT · C 4431 TVA |
+| **Prestation reçue + RAS** | D 632 HT · C 401 (HT−RAS) · C **447** RAS |
+| **Prestation TVA + RAS** | D 632 HT · D 4452 TVA · C 401 net · C 447 RAS |
+| **Immobilisation HT+TVA** | D 2xx HT · D **4451** TVA · C 481 TTC |
+
+Taux indicatifs : **TVA 18 %** (courant OHADA), **RAS 5 %** HT (ex. Sénégal prestations PP ≥ seuil).  
+Les taux réels dépendent du **pays** (BF, CI, SN, CM…) — à adapter.
+
+## Références
+
+- Guide d'application SYSCOHADA / cas factures
+- Écritures ADB Assist (TVA 18 %)
+- CGI Sénégal art. 200 (RAS 5 % prestations)
+- Pratique Burkina (RAS 1–5–20 % selon statut)
 
 ## Installation
 
 ```bash
-# Depuis la racine du repo cloné
-unzip -o CORRECTION_APPRENTISSAGE_SOUSCOMPTES.zip
-# ou copier le dossier src/ par-dessus
-git add src
-git commit -m "feat: sous-comptes, modèles brouillard, apprentissage IA"
+unzip -o CORRECTION_MODELES_OHADA.zip
+git add src/lib/engine.ts src/pages/assistant.tsx
+git commit -m "feat: modèles facture TVA + RAS prestations (apprentissage)"
 git push
 ```
 
-Vercel rebuild automatique après push.
-
-## Comportement
-
-- **IA & Dictionnaire** : exemples concrets avec montant, jamais de poste au journal.
-- **Brouillard** : modèles / récurrents préremplissent le formulaire ; validation manuelle obligatoire.
-- **Plan comptable** : sous-comptes (5211, 5712, …) utilisables partout via AccountPicker.
-- **Pièces justificatives** : upload à la saisie ou sur une ligne existante (📎).
+Espace **IA & Dictionnaire** uniquement — aucune écriture n'est postée au journal.

@@ -888,22 +888,94 @@ export type EcritureType = {
   debit: string;
   credit: string;
   libelle: string;
-  journal: "CAI" | "BQ" | "VTE" | "ACH" | "OD" | "AN" | "PAIE" | "AMORT";
+  journal: JournalCode;
+  /** Schéma pédagogique multi-lignes (TVA, RAS…) — le montant saisi = HT */
+  schema?: "simple" | "tva_achat" | "tva_vente" | "tva_presta" | "ras_presta" | "tva_ras_presta" | "tva_immo";
+  /** Taux TVA indicatif (ex. 0.18) — pays OHADA souvent 18 % */
+  tvaRate?: number;
+  /** Taux RAS indicatif sur HT (ex. 0.05 Sénégal prestations PP) */
+  rasRate?: number;
 };
 
 export const ECRITURES_TYPES: EcritureType[] = [
+  // --- Factures complètes HT + TVA (montant saisi = HT) ---
+  { id: "facture_achat_ttc", label: "Facture achat marchandises HT+TVA", debit: "601", credit: "401", libelle: "Achat marchandises TTC", journal: "ACH", schema: "tva_achat", tvaRate: 0.18 },
+  { id: "facture_vente_ttc", label: "Facture vente marchandises HT+TVA", debit: "411", credit: "701", libelle: "Vente marchandises TTC", journal: "VTE", schema: "tva_vente", tvaRate: 0.18 },
+  { id: "facture_presta_ttc", label: "Facture prestation services HT+TVA", debit: "411", credit: "706", libelle: "Prestations de services TTC", journal: "VTE", schema: "tva_presta", tvaRate: 0.18 },
+  { id: "presta_ras", label: "Prestation reçue avec RAS (sans TVA)", debit: "632", credit: "401", libelle: "Honoraires / prestation avec RAS", journal: "ACH", schema: "ras_presta", rasRate: 0.05 },
+  { id: "presta_tva_ras", label: "Prestation reçue TVA + RAS", debit: "632", credit: "401", libelle: "Prestation services TVA + RAS", journal: "ACH", schema: "tva_ras_presta", tvaRate: 0.18, rasRate: 0.05 },
+  { id: "facture_immo_ttc", label: "Acquisition immobilisation HT+TVA", debit: "245", credit: "481", libelle: "Immobilisation TTC", journal: "OD", schema: "tva_immo", tvaRate: 0.18 },
+  // --- Achats ---
   { id: "achat_march", label: "Achat marchandises à crédit", debit: "601", credit: "401", libelle: "Achats marchandises", journal: "ACH" },
   { id: "tva_ach", label: "TVA récupérable sur achat", debit: "4452", credit: "401", libelle: "TVA récupérable", journal: "ACH" },
+  { id: "achat_march_bq", label: "Achat marchandises payé banque", debit: "601", credit: "521", libelle: "Achats marchandises comptant", journal: "ACH" },
+  { id: "achat_march_caisse", label: "Achat marchandises payé caisse", debit: "601", credit: "571", libelle: "Achats marchandises espèces", journal: "CAI" },
+  { id: "frais_achats", label: "Frais sur achats (transport)", debit: "6015", credit: "401", libelle: "Frais accessoires sur achats", journal: "ACH" },
+  { id: "rrr_obtenus", label: "Remise / RRR obtenus sur achats", debit: "401", credit: "6019", libelle: "Réductions obtenues sur achats", journal: "ACH" },
+  { id: "escompte_obtenu", label: "Escompte obtenu fournisseur", debit: "401", credit: "773", libelle: "Escomptes obtenus", journal: "BQ" },
+  { id: "achat_fourn_ns", label: "Achats non stockés (fournitures)", debit: "604", credit: "401", libelle: "Achats non stockés de matières", journal: "ACH" },
+  { id: "avoir_fourn", label: "Avoir fournisseur (retour)", debit: "401", credit: "601", libelle: "Avoir fournisseur — retour marchandises", journal: "ACH" },
+  // --- Ventes ---
   { id: "vente_credit", label: "Vente à crédit HT", debit: "411", credit: "701", libelle: "Vente marchandises", journal: "VTE" },
   { id: "tva_vte", label: "TVA collectée sur vente", debit: "411", credit: "4431", libelle: "TVA collectée", journal: "VTE" },
+  { id: "vente_caisse", label: "Vente comptant caisse HT", debit: "571", credit: "701", libelle: "Vente marchandises espèces", journal: "CAI" },
+  { id: "vente_bq", label: "Vente comptant banque HT", debit: "521", credit: "701", libelle: "Vente marchandises virement", journal: "BQ" },
+  { id: "presta_services", label: "Prestation de services à crédit", debit: "411", credit: "706", libelle: "Prestations de services", journal: "VTE" },
+  { id: "ports_factures", label: "Ports et frais facturés au client", debit: "411", credit: "707", libelle: "Ports facturés", journal: "VTE" },
+  { id: "escompte_accorde", label: "Escompte accordé client", debit: "673", credit: "411", libelle: "Escomptes accordés", journal: "BQ" },
+  { id: "avoir_client", label: "Avoir client (retour / remise)", debit: "701", credit: "411", libelle: "Avoir client", journal: "VTE" },
+  { id: "avance_client", label: "Avance reçue d'un client", debit: "521", credit: "419", libelle: "Acompte client reçu", journal: "BQ" },
+  { id: "avance_fourn", label: "Avance versée à un fournisseur", debit: "409", credit: "521", libelle: "Acompte fournisseur versé", journal: "BQ" },
+  // --- Règlements ---
   { id: "regl_client_bq", label: "Règlement client banque", debit: "521", credit: "411", libelle: "Règlement client", journal: "BQ" },
   { id: "regl_client_caisse", label: "Règlement client caisse", debit: "571", credit: "411", libelle: "Règlement client espèces", journal: "CAI" },
-  { id: "regl_fourn", label: "Règlement fournisseur", debit: "401", credit: "521", libelle: "Paiement fournisseur", journal: "BQ" },
-  { id: "dot_amort", label: "Dotation amortissement", debit: "681", credit: "284", libelle: "Dotation amortissement", journal: "AMORT" },
-  { id: "var_stock", label: "Variation stock marchandises (sortie)", debit: "6031", credit: "311", libelle: "Variation de stock", journal: "OD" },
-  { id: "prov_clients", label: "Provision clients douteux", debit: "691", credit: "491", libelle: "Provision pour dépréciation clients", journal: "OD" },
+  { id: "regl_client_mm", label: "Règlement client mobile money", debit: "538", credit: "411", libelle: "Règlement client mobile money", journal: "BQ" },
+  { id: "regl_fourn", label: "Règlement fournisseur banque", debit: "401", credit: "521", libelle: "Paiement fournisseur", journal: "BQ" },
+  { id: "regl_fourn_caisse", label: "Règlement fournisseur caisse", debit: "401", credit: "571", libelle: "Paiement fournisseur espèces", journal: "CAI" },
+  { id: "frais_bancaires", label: "Frais bancaires", debit: "631", credit: "521", libelle: "Frais de services bancaires", journal: "BQ" },
+  // --- Charges d'exploitation ---
+  { id: "loyer", label: "Loyer / charges locatives", debit: "622", credit: "401", libelle: "Loyers et charges locatives", journal: "ACH" },
+  { id: "eau_elec", label: "Eau et électricité", debit: "605", credit: "401", libelle: "Eau et électricité", journal: "ACH" },
+  { id: "telecom", label: "Téléphone / internet", debit: "628", credit: "401", libelle: "Frais de télécommunications", journal: "ACH" },
+  { id: "honoraires", label: "Honoraires / conseils", debit: "632", credit: "401", libelle: "Rémunérations d'intermédiaires et honoraires", journal: "ACH" },
+  { id: "assurance", label: "Primes d'assurance", debit: "625", credit: "401", libelle: "Primes d'assurances", journal: "ACH" },
+  { id: "entretien", label: "Entretien et réparations", debit: "624", credit: "401", libelle: "Entretien et réparations", journal: "ACH" },
+  { id: "publicite", label: "Publicité et publications", debit: "627", credit: "401", libelle: "Publicité, publications, relations publiques", journal: "ACH" },
+  // --- Immobilisations ---
+  { id: "achat_immo", label: "Acquisition immobilisation à crédit", debit: "245", credit: "481", libelle: "Acquisition matériel de transport", journal: "OD" },
+  { id: "tva_immo", label: "TVA récupérable sur immobilisation", debit: "4451", credit: "481", libelle: "TVA récupérable immobilisations", journal: "OD" },
+  { id: "achat_immo_bq", label: "Acquisition immobilisation payée", debit: "244", credit: "521", libelle: "Acquisition matériel / mobilier", journal: "BQ" },
+  { id: "regl_fourn_immo", label: "Règlement fournisseur d'immo", debit: "481", credit: "521", libelle: "Paiement fournisseur d'investissements", journal: "BQ" },
+  { id: "dot_amort", label: "Dotation amortissement", debit: "681", credit: "284", libelle: "Dotation amortissement d'exploitation", journal: "AMORT" },
+  { id: "dot_amort_transp", label: "Dotation amort. matériel transport", debit: "681", credit: "2845", libelle: "Dotation amortissement matériel de transport", journal: "AMORT" },
+  // --- Stocks ---
+  { id: "var_stock", label: "Variation stock marchandises (sortie)", debit: "6031", credit: "311", libelle: "Variation de stock marchandises", journal: "OD" },
+  { id: "var_stock_entree", label: "Variation stock marchandises (entrée)", debit: "311", credit: "6031", libelle: "Entrée en stock / inventaire", journal: "OD" },
+  { id: "var_stock_mp", label: "Variation stocks matières premières", debit: "6032", credit: "321", libelle: "Variation stocks matières premières", journal: "OD" },
+  // --- Paie ---
+  { id: "salaire_brut", label: "Salaire brut (rémunérations)", debit: "661", credit: "422", libelle: "Appointements et salaires", journal: "PAIE" },
+  { id: "charges_pat", label: "Charges sociales patronales", debit: "664", credit: "431", libelle: "Charges sociales patronales CNSS", journal: "PAIE" },
+  { id: "retenue_cnss_sal", label: "Retenue CNSS salariale", debit: "422", credit: "431", libelle: "CNSS part salariale", journal: "PAIE" },
+  { id: "retenue_iuts", label: "Retenue IUTS / IRPP", debit: "422", credit: "447", libelle: "IUTS / IR retenu sur salaires", journal: "PAIE" },
+  { id: "paiement_salaires", label: "Paiement net des salaires", debit: "422", credit: "521", libelle: "Virement salaires nets", journal: "BQ" },
+  { id: "paiement_cnss", label: "Paiement cotisations CNSS", debit: "431", credit: "521", libelle: "Paiement cotisations sociales", journal: "BQ" },
+  // --- TVA & fiscal ---
+  { id: "liq_tva_due", label: "Liquidation TVA due (collectée > déductible)", debit: "4431", credit: "4441", libelle: "Centralisation TVA due", journal: "OD" },
+  { id: "liq_tva_credit", label: "Liquidation crédit de TVA", debit: "4441", credit: "4452", libelle: "Crédit de TVA à reporter", journal: "OD" },
+  { id: "paiement_tva", label: "Paiement TVA à l'État", debit: "4441", credit: "521", libelle: "Paiement TVA", journal: "BQ" },
+  { id: "ras_presta", label: "Retenue à la source prestations", debit: "401", credit: "447", libelle: "RAS sur prestations de services", journal: "ACH" },
+  { id: "paiement_is", label: "Paiement acompte / IS", debit: "4443", credit: "521", libelle: "Acompte IS / impôt sociétés", journal: "BQ" },
+  // --- Financement ---
+  { id: "emprunt_bq", label: "Emprunt bancaire reçu", debit: "521", credit: "162", libelle: "Emprunt établissement de crédit", journal: "BQ" },
+  { id: "remb_emprunt", label: "Remboursement emprunt (capital)", debit: "162", credit: "521", libelle: "Remboursement capital emprunt", journal: "BQ" },
+  { id: "interets_emprunt", label: "Intérêts d'emprunt", debit: "671", credit: "521", libelle: "Intérêts des emprunts", journal: "BQ" },
+  { id: "capital_bq", label: "Apport capital en banque", debit: "521", credit: "101", libelle: "Libération capital social", journal: "BQ" },
+  { id: "subvention_inv", label: "Subvention d'investissement reçue", debit: "521", credit: "14", libelle: "Subvention d'équipement reçue", journal: "BQ" },
+  // --- Provisions & clôture ---
+  { id: "prov_clients", label: "Provision clients douteux", debit: "691", credit: "491", libelle: "Dépréciation des comptes clients", journal: "OD" },
   { id: "prov_risques", label: "Provision pour risques", debit: "691", credit: "191", libelle: "Provision pour risques et charges", journal: "OD" },
-  { id: "salaire_brut", label: "Salaire brut", debit: "661", credit: "422", libelle: "Rémunérations du personnel", journal: "PAIE" },
+  { id: "reprise_prov", label: "Reprise de provision", debit: "491", credit: "791", libelle: "Reprise sur dépréciations clients", journal: "OD" },
+  { id: "affect_reserve", label: "Affectation résultat → réserve légale", debit: "12", credit: "111", libelle: "Dotation réserve légale", journal: "AN" },
 ];
 
 
