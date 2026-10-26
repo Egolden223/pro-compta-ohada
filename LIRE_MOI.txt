@@ -1,14 +1,13 @@
-URGENT — restaurer store.ts
-============================
-Le fichier src/lib/store.ts sur GitHub a été tronqué par erreur.
+CORRECTIONS RUNTIME PAGES
+=========================
+Remplacer ces fichiers dans le repo GitHub :
 
-1. Ouvrir https://github.com/Egolden223/pro-compta-ohada/blob/main/src/lib/store.ts
-2. Edit → tout sélectionner → coller le contenu de src/lib/store.ts de cette archive
-3. Vérifier que workspace-helpers.ts existe aussi (sinon coller celui de l'archive)
-4. Commit : fix: restore full store.ts
-5. Attendre Vercel READY
+1. src/pages/saisie.tsx     → axe is not defined (Brouillard)
+2. src/pages/misc.tsx       → data is not defined (Guide)  [URGENT: fichier actuellement cassé sur GitHub]
+3. src/pages/cabinet.tsx    → loadWorkspaceIndex (Cabinet)
+4. src/pages/banque-fiscal.tsx → matches is not defined (Impôt IS)
 
-Le store de cette archive contient déjà :
-- import workspace-helpers
-- loadWorkspaceIndex / saveWorkspaceIndex / WORKSPACE_PREFIX
-- toutes les méthodes (postPayroll, can, deleteWorkspace, etc.)
+Pour chaque fichier :
+- Ouvrir sur GitHub → Edit → coller le contenu de l'archive → Commit
+
+Puis attendre Vercel READY et vider le cache navigateur.
