@@ -14,7 +14,7 @@ import type { JournalCode, JournalLine } from "@/lib/types";
 import { countryByName } from "@/lib/countries";
 import { Trash2 } from "lucide-react";
 
-const JOURNALS: JournalCode[] = ["CAI", "BQ", "VTE", "ACH", "OD", "AN", "PAIE", "AMORT"]; // BUILD_BUST_2026_10_26
+const JOURNALS: JournalCode[] = ["CAI", "BQ", "VTE", "ACH", "OD", "AN", "PAIE", "AMORT"]; // BUILD_BUST_2026_10_26_FORCE
 
 const empty = (): Omit<JournalLine, "id"> => ({
   date: todayISO(),
