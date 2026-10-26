@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -227,13 +227,109 @@ export function ParametresPage() {
 
 export function PlanPage() {
   const classes = [...new Set(PLAN_COMPTABLE.map((a) => a.classe))];
+  const custom = useAppStore((s) => (s as { customAccounts?: { code: string; label: string; categorie?: string; parentCode?: string }[] }).customAccounts) || [];
+  const addCustom = useAppStore((s) => (s as { addCustomAccount?: (a: { code: string; label: string; classe: string; categorie: string; parentCode?: string }) => void }).addCustomAccount);
+  const removeCustom = useAppStore((s) => (s as { removeCustomAccount?: (code: string) => void }).removeCustomAccount);
+  const canWrite = useAppStore((s) => s.can("write"));
+  const [code, setCode] = useState("");
+  const [label, setLabel] = useState("");
+  const [parent, setParent] = useState("521");
+
+  function createSub() {
+    const c = code.trim();
+    const lab = label.trim();
+    if (!c || !lab) {
+      toast.error("Code et libellé obligatoires");
+      return;
+    }
+    if (!/^[0-9]{3,8}$/.test(c)) {
+      toast.error("Code numérique 3 à 8 chiffres (ex. 5211, 5712)");
+      return;
+    }
+    if (!addCustom) {
+      toast.error("Fonction sous-comptes indisponible — mettez à jour le store");
+      return;
+    }
+    addCustom({
+      code: c,
+      label: lab,
+      classe: c[0] || "5",
+      categorie: "Sous-compte",
+      parentCode: parent || undefined,
+    });
+    toast.success(`Sous-compte ${c} créé`);
+    setCode("");
+    setLabel("");
+  }
+
   return (
     <div>
       <PageHeader
         eyebrow="SYSCOHADA"
         title="Plan comptable"
-        description="Comptes usuels du système normal révisé. Utilisés par le brouillard, la balance et les états."
+        description="Comptes usuels + sous-comptes (plusieurs banques, caisses, stocks…). Utilisés par le brouillard et les états."
       />
+
+      <Card className="mb-6 space-y-3 p-4">
+        <p className="text-sm font-medium">Créer un sous-compte</p>
+        <p className="text-xs text-muted">
+          Exemples : 5211 Banque BOA, 5212 Banque Ecobank, 5712 Caisse secondaire, 3112 Stock dépôt 2.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Field label="N° compte">
+            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="5211" />
+          </Field>
+          <Field label="Libellé">
+            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Banque BOA" />
+          </Field>
+          <Field label="Compte parent (indicatif)">
+            <Input value={parent} onChange={(e) => setParent(e.target.value)} placeholder="521" />
+          </Field>
+          <div className="flex items-end">
+            <Button type="button" onClick={createSub} disabled={!canWrite} className="w-full">
+              Ajouter
+            </Button>
+          </div>
+        </div>
+        {custom.length > 0 ? (
+          <div className="overflow-hidden rounded-[12px] border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-elevated text-left text-xs text-muted">
+                  <th className="px-3 py-2">Code</th>
+                  <th className="px-3 py-2">Libellé</th>
+                  <th className="px-3 py-2">Parent</th>
+                  <th className="px-3 py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {custom.map((a) => (
+                  <tr key={a.code} className="border-t border-border">
+                    <td className="px-3 py-2 font-mono text-xs">{a.code}</td>
+                    <td className="px-3 py-2">{a.label}</td>
+                    <td className="px-3 py-2 text-xs text-muted">{a.parentCode || "—"}</td>
+                    <td className="px-3 py-2 text-right">
+                      <button
+                        type="button"
+                        className="text-xs text-danger"
+                        onClick={() => {
+                          removeCustom?.(a.code);
+                          toast("Sous-compte retiré");
+                        }}
+                      >
+                        Supprimer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-xs text-muted">Aucun sous-compte personnalisé pour l&apos;instant.</p>
+        )}
+      </Card>
+
       {classes.map((cl) => (
         <section key={cl} className="mb-8">
           <h2 className="mb-3 font-display text-xl">Classe {cl}</h2>

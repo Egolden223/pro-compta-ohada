@@ -770,6 +770,8 @@ export function createSeed(): AppData {
     fiscalReintegrations: 0,
     fiscalDeductions: 0,
     deficitImputed: 0,
+    customAccounts: [],
+    journalTemplates: [],
     lastLettering: "AA",
     recurring: [],
     provisions: [],

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { AccountPicker } from "@/components/account-picker";
 import { Money } from "@/components/money";
 import { useAppStore } from "@/lib/store";
+import { ECRITURES_TYPES } from "@/lib/engine";
 import { accountLabel } from "@/lib/accounts";
 import { formatDate } from "@/lib/format";
 import { todayISO } from "@/lib/utils";
@@ -45,6 +46,49 @@ export function SaisiePage() {
   const currency = countryByName(country).currency;
   const [form, setForm] = useState(empty);
   const [q, setQ] = useState("");
+  const journalTemplates = useAppStore((s) => (s as { journalTemplates?: { id: string; name: string; journal: string; debit: string; credit: string; libelle: string; amount?: number; axeAnalytique?: string; axe2?: string }[] }).journalTemplates) || [];
+  const recurring = useAppStore((s) => s.recurring) || [];
+  const addJournalTemplate = useAppStore((s) => (s as { addJournalTemplate?: (t: unknown) => void }).addJournalTemplate);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [tplName, setTplName] = useState("");
+
+  function applyModel(m: { journal?: string; debit: string; credit: string; libelle: string; amount?: number; axeAnalytique?: string; axe2?: string }) {
+    setForm((f) => ({
+      ...f,
+      journal: (m.journal as typeof f.journal) || f.journal,
+      debit: m.debit,
+      credit: m.credit,
+      libelle: m.libelle,
+      amount: m.amount ?? f.amount,
+    }));
+    if (m.axeAnalytique) setAxe(m.axeAnalytique);
+    if (m.axe2) setAxe2(m.axe2);
+    toast.message("Modèle chargé — modifiez puis Enregistrer (rien n'est posté tant que vous ne validez pas).");
+  }
+
+  function saveAsTemplate() {
+    if (!addJournalTemplate) {
+      toast.error("Fonction modèles non disponible (mettez à jour le store).");
+      return;
+    }
+    if (!form.debit || !form.credit || !form.libelle.trim()) {
+      toast.error("Renseignez débit, crédit et libellé avant de sauver un modèle.");
+      return;
+    }
+    const name = tplName.trim() || form.libelle.trim().slice(0, 40);
+    addJournalTemplate({
+      name,
+      journal: form.journal,
+      debit: form.debit,
+      credit: form.credit,
+      libelle: form.libelle,
+      amount: form.amount || undefined,
+      axeAnalytique: axe || undefined,
+      axe2: axe2 || undefined,
+    });
+    setTplName("");
+    toast.success("Modèle d'écriture enregistré");
+  }
 
   const filtered = [...journal]
     .reverse()
@@ -84,8 +128,32 @@ export function SaisiePage() {
       axeAnalytique: axe || undefined,
       axe2: axe2 || undefined,
     });
+    if (pendingFile) {
+      const file = pendingFile;
+      if (file.size > 400_000) {
+        toast.error("Pièce jointe trop volumineuse (max ~400 Ko).");
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const lines = useAppStore.getState().journal;
+          const last = [...lines].reverse().find((l) => l.piece === piece);
+          addAtt({
+            refType: "journal",
+            refId: last?.id || piece,
+            name: file.name,
+            dataUrl: String(reader.result),
+            mime: file.type || "application/octet-stream",
+          });
+          toast.success("Pièce justificative jointe");
+        };
+        reader.readAsDataURL(file);
+      }
+      setPendingFile(null);
+    }
     toast.success(`Écriture enregistrée — pièce ${piece} (D ${form.debit} / C ${form.credit}).`);
     setForm({ ...empty(), piece: "", date: form.date, journal: form.journal });
+    setAxe("");
+    setAxe2("");
   }
 
   return (
@@ -95,6 +163,55 @@ export function SaisiePage() {
         title="Brouillard"
         description="Une ligne = un mouvement débit/crédit. C’est le seul journal à remplir : tout le reste se calcule."
       />
+
+
+      <Card className="mb-4 space-y-3 p-4">
+        <p className="text-sm font-medium">Modèles / récurrents → préremplir le brouillard</p>
+        <p className="text-xs text-muted">
+          Chargez un modèle, ajustez les montants/comptes, puis cliquez Enregistrer. Rien n&apos;est écrit tant que vous ne validez pas.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {journalTemplates.map((t) => (
+            <Button key={t.id} type="button" variant="secondary" size="sm" onClick={() => applyModel(t)}>
+              {t.name}
+            </Button>
+          ))}
+          {journalTemplates.length === 0 ? (
+            <span className="text-xs text-muted">Aucun modèle perso — saisissez une écriture puis « Sauver modèle ».</span>
+          ) : null}
+        </div>
+        {recurring.filter((r) => r.active).length > 0 ? (
+          <div className="flex flex-wrap gap-2 border-t border-border pt-2">
+            <span className="w-full text-xs text-muted">Facturation récurrente (rappel libellé) :</span>
+            {recurring.filter((r) => r.active).map((r) => (
+              <Button
+                key={r.id}
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  applyModel({
+                    journal: "VTE",
+                    debit: "411",
+                    credit: r.saleAccount || "701",
+                    libelle: `Récurrent : ${r.name}`,
+                  })
+                }
+              >
+                {r.name}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        <div className="flex flex-wrap items-end gap-2 border-t border-border pt-2">
+          <Field label="Nom du modèle à sauver">
+            <Input value={tplName} onChange={(e) => setTplName(e.target.value)} placeholder="Ex. Loyer mensuel siège" />
+          </Field>
+          <Button type="button" variant="secondary" onClick={saveAsTemplate} disabled={!canWrite}>
+            Sauver modèle depuis le formulaire
+          </Button>
+        </div>
+      </Card>
 
       <Card className="mb-6">
         <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -159,6 +276,16 @@ export function SaisiePage() {
             </Field>
           </div>
           <div className="flex items-end">
+            
+          <Field label="Pièce justificative (optionnel)">
+            <Input
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => setPendingFile(e.target.files?.[0] || null)}
+            />
+            {pendingFile ? <p className="mt-1 text-xs text-muted">{pendingFile.name}</p> : null}
+          </Field>
+
             <Button type="submit" className="w-full" disabled={!canWrite}>
               Enregistrer
             </Button>

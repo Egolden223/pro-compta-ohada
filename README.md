@@ -1,37 +1,36 @@
-# PRO COMPTA OHADA
+# CORRECTION — Apprentissage + sous-comptes + brouillard
 
-Comptabilité SYSCOHADA — PWA installable (PC, Android, iPhone), hors ligne + sync.
+Fichiers à placer **par-dessus** le dépôt `pro-compta-ohada` (même arborescence `src/...`).
 
-## Déploiement rapide (GitHub + Vercel)
+## Contenu
 
-### 1. Pousser le code source complet
+| Fichier | Rôle |
+|---------|------|
+| `src/lib/types.ts` | `CustomAccount`, `JournalTemplate`, champs `customAccounts` / `journalTemplates` |
+| `src/lib/seed.ts` | Initialisation `customAccounts: []`, `journalTemplates: []` |
+| `src/lib/store.ts` | Actions `addCustomAccount`, `removeCustomAccount`, `addJournalTemplate`, etc. |
+| `src/lib/account-utils.ts` | `allAccounts(custom)` plan + sous-comptes |
+| `src/components/account-picker.tsx` | Saisie n° de compte ou libellé + liste filtrée |
+| `src/pages/saisie.tsx` | Modèles / récurrents → préremplir, sauver modèle, PJ à l'enregistrement |
+| `src/pages/misc.tsx` | Plan comptable : création de sous-comptes |
+| `src/pages/assistant.tsx` | Espace d'apprentissage (exemples + question IA, **sans** écriture au journal) |
 
-Téléchargez `PRO_COMPTA_OHADA_PRODUCTION.zip`, décompressez, puis :
+## Installation
 
 ```bash
-cd PRO_COMPTA_OHADA_PRODUCTION
-git init
-git branch -M main
-git remote add origin https://github.com/Egolden223/pro-compta-ohada.git
-git add .
-git commit -m "PRO COMPTA OHADA — source complète"
-git push -u origin main --force
+# Depuis la racine du repo cloné
+unzip -o CORRECTION_APPRENTISSAGE_SOUSCOMPTES.zip
+# ou copier le dossier src/ par-dessus
+git add src
+git commit -m "feat: sous-comptes, modèles brouillard, apprentissage IA"
+git push
 ```
 
-(Le `--force` écrase les fichiers de config déjà présents.)
+Vercel rebuild automatique après push.
 
-### 2. Vercel
+## Comportement
 
-1. https://vercel.com → **Add New Project**
-2. Importer **pro-compta-ohada**
-3. **Deploy**
-
-URL : `https://pro-compta-ohada.vercel.app` (ou similaire)
-
-### 3. Installer l'app
-
-- Android : Chrome → Installer
-- iPhone : Safari → Partager → Sur l'écran d'accueil  
-- PC : Chrome → Installer
-
-Config déjà en place : `vercel.json`, `package.json` (`build:vercel`), PWA (`manifest` + `sw.js`).
+- **IA & Dictionnaire** : exemples concrets avec montant, jamais de poste au journal.
+- **Brouillard** : modèles / récurrents préremplissent le formulaire ; validation manuelle obligatoire.
+- **Plan comptable** : sous-comptes (5211, 5712, …) utilisables partout via AccountPicker.
+- **Pièces justificatives** : upload à la saisie ou sur une ligne existante (📎).

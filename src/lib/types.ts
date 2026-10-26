@@ -487,6 +487,31 @@ export type AppData = {
 
   /** Dernier code de lettrage attribué (compteur AA, AB…) */
   lastLettering: string;
+  /** Sous-comptes créés par l'utilisateur (banques, caisses, stocks…) */
+  customAccounts: CustomAccount[];
+  /** Modèles d'écriture pour préremplir le Brouillard */
+  journalTemplates: JournalTemplate[];
+};
+
+
+/** Sous-compte utilisateur (ex. 5211 Banque BOA, 5712 Caisse secondaire) */
+export type CustomAccount = Account & {
+  parentCode?: string;
+  isCustom?: true;
+};
+
+/** Modèle d'écriture réutilisable dans le Brouillard (préremplit le formulaire, ne poste pas) */
+export type JournalTemplate = {
+  id: string;
+  name: string;
+  journal: JournalCode;
+  debit: string;
+  credit: string;
+  libelle: string;
+  /** Montant indicatif optionnel */
+  amount?: number;
+  axeAnalytique?: string;
+  axe2?: string;
 };
 
 export type RecurringTemplate = {

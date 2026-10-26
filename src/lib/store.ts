@@ -12,6 +12,8 @@ import type {
   Partner,
   Settings,
   StockMove,
+  CustomAccount,
+  JournalTemplate,
 } from "./types";
 import { createSeed } from "./seed";
 import { uid } from "./utils";
@@ -29,6 +31,11 @@ type Actions = {
   updateSettings: (patch: Partial<Settings>) => void;
   markBackedUp: () => void;
   addJournalLine: (line: Omit<JournalLine, "id">) => void;
+  addCustomAccount: (a: Omit<CustomAccount, "isCustom"> & { isCustom?: true }) => void;
+  removeCustomAccount: (code: string) => void;
+  addJournalTemplate: (tpl: Omit<JournalTemplate, "id">) => void;
+  updateJournalTemplate: (id: string, patch: Partial<JournalTemplate>) => void;
+  removeJournalTemplate: (id: string) => void;
   updateJournalLine: (id: string, patch: Partial<JournalLine>) => void;
   removeJournalLine: (id: string) => void;
   addPartner: (p: Omit<Partner, "id">) => string;
@@ -178,6 +185,31 @@ export const useAppStore = create<Store>()(
       markBackedUp: () => set({ lastBackupAt: new Date().toISOString().slice(0, 10) }),
       addJournalLine: (line) =>
         set((s) => ({ journal: [...s.journal, { ...line, id: uid("j") }] })),
+
+      addCustomAccount: (a) =>
+        set((s) => {
+          const code = (a.code || "").trim();
+          if (!code) return s;
+          const exists = (s.customAccounts || []).some((x) => x.code === code);
+          if (exists) return s;
+          const row: CustomAccount = { ...a, code, isCustom: true, label: a.label || code, categorie: a.categorie || "Perso" };
+          return { customAccounts: [...(s.customAccounts || []), row] };
+        }),
+      removeCustomAccount: (code) =>
+        set((s) => ({ customAccounts: (s.customAccounts || []).filter((x) => x.code !== code) })),
+      addJournalTemplate: (tpl) =>
+        set((s) => ({
+          journalTemplates: [
+            ...(s.journalTemplates || []),
+            { ...tpl, id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `jt-${Date.now()}` },
+          ],
+        })),
+      updateJournalTemplate: (id, patch) =>
+        set((s) => ({
+          journalTemplates: (s.journalTemplates || []).map((x) => (x.id === id ? { ...x, ...patch } : x)),
+        })),
+      removeJournalTemplate: (id) =>
+        set((s) => ({ journalTemplates: (s.journalTemplates || []).filter((x) => x.id !== id) })),
       updateJournalLine: (id, patch) =>
         set((s) => ({
           journal: s.journal.map((l) => (l.id === id ? { ...l, ...patch } : l)),
@@ -1059,6 +1091,11 @@ export const useAppStore = create<Store>()(
           updateSettings,
           markBackedUp,
           addJournalLine,
+          removeJournalTemplate,
+          updateJournalTemplate,
+          addJournalTemplate,
+          removeCustomAccount,
+          addCustomAccount,
           updateJournalLine,
           removeJournalLine,
           addPartner,
@@ -1097,6 +1134,11 @@ export const useAppStore = create<Store>()(
         void updateSettings;
         void markBackedUp;
         void addJournalLine;
+        void removeJournalTemplate;
+        void updateJournalTemplate;
+        void addJournalTemplate;
+        void removeCustomAccount;
+        void addCustomAccount;
         void updateJournalLine;
         void removeJournalLine;
         void addPartner;

@@ -15,7 +15,7 @@ export function AccountPicker({
   allowEmpty?: boolean;
 }) {
   const custom =
-    useAppStore((s) => ((s as { customAccounts?: Account[] }).customAccounts as Account[] | undefined)) || [];
+    useAppStore((s) => s.customAccounts || []) as Account[];
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState(value || "");
   const accounts = useMemo(() => allAccounts(custom), [custom]);
