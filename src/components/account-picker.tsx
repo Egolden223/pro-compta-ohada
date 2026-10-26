@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { allAccounts } from "@/lib/accounts";
+import { allAccounts } from "@/lib/account-utils";
 import { useAppStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 
