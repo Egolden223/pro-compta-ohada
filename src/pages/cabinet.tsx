@@ -10,10 +10,16 @@ import type { WorkspaceMeta } from "@/lib/types";
 export function CabinetPage() {
   const data = useAppStore();
   const [name, setName] = useState(data.settings.companyName || "");
-  const [list, setList] = useState<WorkspaceMeta[]>(() => data.listWorkspaces());
+  const [list, setList] = useState<WorkspaceMeta[]>(() => {
+    try {
+      return data.listWorkspaces?.() ?? [];
+    } catch {
+      return [];
+    }
+  });
 
   function refresh() {
-    setList(data.listWorkspaces());
+    setList((() => { try { return data.listWorkspaces?.() ?? []; } catch { return []; } })());
   }
 
   function save() {
