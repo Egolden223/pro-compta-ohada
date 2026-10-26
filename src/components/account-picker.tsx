@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { allAccounts } from "@/lib/account-utils";
 import { useAppStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
+import type { Account } from "@/lib/types";
 
 /** Saisie rapide : taper le n° de compte OU liste filtree (plan + sous-comptes). */
 export function AccountPicker({
@@ -13,7 +14,8 @@ export function AccountPicker({
   onChange: (code: string) => void;
   allowEmpty?: boolean;
 }) {
-  const custom = useAppStore((s) => s.customAccounts) || [];
+  const custom =
+    useAppStore((s) => ((s as { customAccounts?: Account[] }).customAccounts as Account[] | undefined)) || [];
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState(value || "");
   const accounts = useMemo(() => allAccounts(custom), [custom]);
