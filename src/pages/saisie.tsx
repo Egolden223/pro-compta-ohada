@@ -25,8 +25,6 @@ const empty = (): Omit<JournalLine, "id"> => ({
   libelle: "",
   amount: 0,
   source: "manual",
-        axeAnalytique: axe || undefined,
-        axe2: axe2 || undefined,
 });
 
 export function SaisiePage() {
@@ -74,13 +72,18 @@ export function SaisiePage() {
       return;
     }
     const piece = form.piece.trim() || consume("PIECE_BROUILLARD");
-    // Chaque ligne est déjà équilibrée (1 débit = 1 crédit = montant).
-    // Contrôle anti-erreur : compte débit/crédit non vides + montant entier XOF
     if (!Number.isFinite(form.amount) || form.amount !== Math.round(form.amount)) {
       toast.error("Le montant doit être un entier (XOF sans décimales).");
       return;
     }
-    add({ ...form, piece, amount: Math.round(form.amount), source: "manual" });
+    add({
+      ...form,
+      piece,
+      amount: Math.round(form.amount),
+      source: "manual",
+      axeAnalytique: axe || undefined,
+      axe2: axe2 || undefined,
+    });
     toast.success(`Écriture enregistrée — pièce ${piece} (D ${form.debit} / C ${form.credit}).`);
     setForm({ ...empty(), piece: "", date: form.date, journal: form.journal });
   }
@@ -118,26 +121,26 @@ export function SaisiePage() {
             </NativeSelect>
           </Field>
           <Field label="Axe 1 (section)">
-          <NativeSelect value={axe} onChange={(e) => setAxe(e.target.value)}>
-            <option value="">— Aucun —</option>
-            {axes.filter((a) => a.active).map((a) => (
-              <option key={a.id} value={a.code}>
-                {a.code} — {a.label}
-              </option>
-            ))}
-          </NativeSelect>
-        </Field>
-        <Field label="Axe 2 (projet)">
-          <NativeSelect value={axe2} onChange={(e) => setAxe2(e.target.value)}>
-            <option value="">— Aucun —</option>
-            {axes.filter((a) => a.active).map((a) => (
-              <option key={a.id} value={a.code}>
-                {a.code} — {a.label}
-              </option>
-            ))}
-          </NativeSelect>
-        </Field>
-        <Field label="Compte débité">
+            <NativeSelect value={axe} onChange={(e) => setAxe(e.target.value)}>
+              <option value="">— Aucun —</option>
+              {axes.filter((a) => a.active).map((a) => (
+                <option key={a.id} value={a.code}>
+                  {a.code} — {a.label}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+          <Field label="Axe 2 (projet)">
+            <NativeSelect value={axe2} onChange={(e) => setAxe2(e.target.value)}>
+              <option value="">— Aucun —</option>
+              {axes.filter((a) => a.active).map((a) => (
+                <option key={a.id} value={a.code}>
+                  {a.code} — {a.label}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+          <Field label="Compte débité">
             <AccountPicker value={form.debit} onChange={(debit) => setForm({ ...form, debit })} />
           </Field>
           <Field label="Compte crédité">
@@ -156,7 +159,7 @@ export function SaisiePage() {
             </Field>
           </div>
           <div className="flex items-end">
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={!canWrite}>
               Enregistrer
             </Button>
           </div>
