@@ -6,20 +6,20 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "PRO COMPTA OHADA";
+const APP_SHORT = "ProCompta";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "ProCompta" },
+      { name: "apple-mobile-web-app-title", content: APP_SHORT },
+      { name: "application-name", content: APP_NAME },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "theme-color", content: "#0f1419" },
-
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: APP_NAME },
-      { name: "theme-color", content: "#0c1210" },
       {
         name: "description",
         content: "Comptabilité SYSCOHADA installable, en ligne et hors ligne.",
@@ -29,7 +29,8 @@ export const Route = createRootRoute({
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
+      // Manifest public avec name = PRO COMPTA OHADA (ne pas utiliser /__grok/manifest)
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   component: () => (
